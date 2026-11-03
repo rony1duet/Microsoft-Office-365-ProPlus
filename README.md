@@ -43,7 +43,7 @@ A lightweight, automated, and modular deployment tool for **Microsoft Office 365
 ### 2. Activation
 After installation completes:
 1. Right-click **`Office 365 Activator.bat`** and select **Run as administrator**.
-2. The script will automatically locate your Office installation, install volume license files, set the KMS client configuration, and connect to available KMS servers to activate.
+2. The script will automatically locate your Office installation, install volume license files, configure the KMS client, and connect to verified active KMS servers to activate.
 
 ---
 
@@ -75,12 +75,15 @@ Microsoft-Office-365-ProPlus/
 - **Robust KMS Activation**:
   - Automatically identifies 32-bit and 64-bit installations under `%ProgramFiles%` and `%ProgramFiles(x86)%`.
   - Converts retail licenses to Volume Licensing (VL) using official Microsoft KMS license certificates (`ospp.vbs`).
-  - Includes a 5-server redundant failover pool with automatic retry logic:
-    - `23.226.136.46`
-    - `107.175.77.7`
-    - `kms7.devomman.com`
+  - Pure ASCII compatibility avoiding Windows Command Prompt UTF-8 / `chcp 65001` byte alignment corruption.
+  - Includes a 7-server redundant failover pool with verified active KMS servers:
+    - `kms8.msguides.com`
+    - `kms9.msguides.com`
+    - `kms.loli.best`
+    - `kms.digiboy.ir`
+    - `kms.moeclub.org`
+    - `kms.ddns.net`
     - `e8.us.to`
-    - `kms7.MSGuides.com`
 
 ---
 
@@ -157,7 +160,7 @@ On an internet-connected PC, launch <code>Office 365 Setup.cmd</code>, toggle <c
 
 <details>
 <summary><b>3. What should I do if KMS activation fails?</b></summary>
-Ensure your firewall or antivirus is not blocking outbound traffic on port <b>1688</b>. The activator script automatically attempts 5 distinct public KMS servers across up to 15 retries before timing out.
+Ensure your firewall or antivirus is not blocking outbound traffic on port <b>1688</b>. The activator script automatically attempts 7 distinct verified public KMS servers before timing out.
 </details>
 
 ---
@@ -171,4 +174,3 @@ This project is created for educational and testing purposes. Microsoft, Office 
 ## 📄 License
 
 This repository is licensed under the [MIT License](LICENSE).
-

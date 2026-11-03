@@ -1,152 +1,146 @@
 @echo off
-chcp 65001 > nul
+setlocal EnableExtensions
 title Microsoft Office Activation Tool
 
 :: Check for administrator privileges
 net session >nul 2>&1
-if %errorLevel% neq 0 (
+if %errorlevel% neq 0 (
     color 0C
     echo.
-    echo  ╔═══════════════════════════════════════════════╗
-    echo  ║       ADMINISTRATOR PRIVILEGES REQUIRED       ║
-    echo  ╚═══════════════════════════════════════════════╝
+    echo  ===================================================
+    echo         ADMINISTRATOR PRIVILEGES REQUIRED
+    echo  ===================================================
     echo.
     echo  Please right-click this file and select "Run as administrator"
     echo.
     pause
-    exit
+    exit /b 1
 )
 
 cls
 color 0B
 
 echo.
-echo  ╔═══════════════════════════════════════════════╗
-echo  ║        Microsoft Office Activation Tool       ║
-echo  ╚═══════════════════════════════════════════════╝
+echo  ===================================================
+echo          Microsoft Office Activation Tool
+echo  ===================================================
 echo.
 echo  This tool will activate your Microsoft Office installation
-echo  using a KMS server.
+echo  using a KMS volume licensing server.
 echo.
 echo  [*] Checking Office installation...
 
 :: Find Office installation path
-set "OfficeFound=0"
+set "OFFICE_PATH="
 if exist "%ProgramFiles%\Microsoft Office\root\Office16\ospp.vbs" (
-    cd /d "%ProgramFiles%\Microsoft Office\root\Office16"
-    set "OfficeFound=1"
-) else if exist "%ProgramFiles(x86)%\Microsoft Office\root\Office16\ospp.vbs" (
-    cd /d "%ProgramFiles(x86)%\Microsoft Office\root\Office16"
-    set "OfficeFound=1"
-) else if exist "%ProgramFiles%\Microsoft Office\Office16\ospp.vbs" (
-    cd /d "%ProgramFiles%\Microsoft Office\Office16"
-    set "OfficeFound=1"
-) else if exist "%ProgramFiles(x86)%\Microsoft Office\Office16\ospp.vbs" (
-    cd /d "%ProgramFiles(x86)%\Microsoft Office\Office16"
-    set "OfficeFound=1"
+    set "OFFICE_PATH=%ProgramFiles%\Microsoft Office\root\Office16"
+)
+if not defined OFFICE_PATH (
+    if exist "%ProgramFiles(x86)%\Microsoft Office\root\Office16\ospp.vbs" (
+        set "OFFICE_PATH=%ProgramFiles(x86)%\Microsoft Office\root\Office16"
+    )
+)
+if not defined OFFICE_PATH (
+    if exist "%ProgramFiles%\Microsoft Office\Office16\ospp.vbs" (
+        set "OFFICE_PATH=%ProgramFiles%\Microsoft Office\Office16"
+    )
+)
+if not defined OFFICE_PATH (
+    if exist "%ProgramFiles(x86)%\Microsoft Office\Office16\ospp.vbs" (
+        set "OFFICE_PATH=%ProgramFiles(x86)%\Microsoft Office\Office16"
+    )
 )
 
-if %OfficeFound%==0 (
+if not defined OFFICE_PATH (
     color 0C
     echo.
     echo  [!] ERROR: Microsoft Office installation not found.
     echo      Please make sure Office is properly installed.
     echo.
     pause
-    exit
+    exit /b 1
 )
 
-echo  [✓] Office installation found!
+cd /d "%OFFICE_PATH%"
+echo  [OK] Office installation found at: "%OFFICE_PATH%"
 echo.
-echo  [*] Installing license files...
 
-:: Install license files
-if exist "..\root\Licenses16\" (
-    for /f %%x in ('dir /b ..\root\Licenses16\ProPlus2021VL_KMS*.xrm-ms 2^>nul') do (
-        cscript //nologo ospp.vbs /inslic:"..\root\Licenses16\%%x" >nul
-    )
-    for /f %%x in ('dir /b ..\root\Licenses16\proplusvl_kms*.xrm-ms 2^>nul') do (
-        cscript //nologo ospp.vbs /inslic:"..\root\Licenses16\%%x" >nul
-    )
-) else if exist "..\Licenses16\" (
-    for /f %%x in ('dir /b ..\Licenses16\ProPlus2021VL_KMS*.xrm-ms 2^>nul') do (
-        cscript //nologo ospp.vbs /inslic:"..\Licenses16\%%x" >nul
-    )
-    for /f %%x in ('dir /b ..\Licenses16\proplusvl_kms*.xrm-ms 2^>nul') do (
-        cscript //nologo ospp.vbs /inslic:"..\Licenses16\%%x" >nul
+:: Detect and install Volume License files
+set "LIC_PATH="
+if exist "..\Licenses16" (
+    set "LIC_PATH=..\Licenses16"
+)
+if not defined LIC_PATH (
+    if exist "..\root\Licenses16" (
+        set "LIC_PATH=..\root\Licenses16"
     )
 )
 
-echo  [✓] License files installed
-echo.
-echo  [*] Configuring KMS client...
+if defined LIC_PATH (
+    echo  [*] Installing KMS Volume License packages...
+    for /f "tokens=*" %%x in ('dir /b "%LIC_PATH%\ProPlus2021VL_KMS*.xrm-ms" 2^>nul') do (
+        cscript //nologo ospp.vbs /inslic:"%LIC_PATH%\%%x" >nul
+    )
+    for /f "tokens=*" %%x in ('dir /b "%LIC_PATH%\proplusvl_kms*.xrm-ms" 2^>nul') do (
+        cscript //nologo ospp.vbs /inslic:"%LIC_PATH%\%%x" >nul
+    )
+    echo  [OK] License files installed.
+) else (
+    echo  [!] License directory not found; attempting direct activation...
+)
 
-:: Configure KMS
+echo.
+echo  [*] Configuring KMS client settings and key...
 cscript //nologo ospp.vbs /setprt:1688 >nul
 cscript //nologo ospp.vbs /unpkey:6F7TH >nul 2>&1
 cscript //nologo ospp.vbs /inpkey:FXYTK-NJJ8C-GB6DW-3DYQT-6F7TH >nul
-
-:: Remove previous keys if they exist
 cscript //nologo ospp.vbs /unpkey:BTDRB >nul 2>&1
 cscript //nologo ospp.vbs /unpkey:KHGM9 >nul 2>&1
 cscript //nologo ospp.vbs /unpkey:CPQVG >nul 2>&1
+echo  [OK] KMS client configured.
 
-echo  [✓] KMS client configured
 echo.
-echo  [*] Attempting to activate Office...
+echo  [*] Attempting KMS activation...
 echo      Connecting to KMS servers, please wait...
 echo.
 
-:: KMS Server List Loop
-set server=1
-set attempts=0
-:skms
-set /a attempts+=1
-if %server%==1 set KMS=23.226.136.46
-if %server%==2 set KMS=107.175.77.7
-if %server%==3 set KMS=kms7.devomman.com
-if %server%==4 set KMS=e8.us.to
-if %server%==5 set KMS=kms7.MSGuides.com
-if %server%==6 goto busyError
-
-:: Set host
-echo     Trying KMS server %server% of 5...
-cscript //nologo ospp.vbs /sethst:%KMS% >nul
-
-:: Try Activation
-cscript //nologo ospp.vbs /act | find /i "successful" && (
-    color 0A
-    echo.
-    echo  ╔═══════════════════════════════════════════════╗
-    echo  ║       OFFICE ACTIVATED SUCCESSFULLY!          ║
-    echo  ╚═══════════════════════════════════════════════╝
-    echo.
-    echo  Your Microsoft Office is now fully activated.
-    echo.
-    echo  Press any key to exit...
-    pause >nul
-    exit
-) || (
-    echo     Server %server% failed. Trying next server...
-    set /a server+=1
-    if %attempts% LSS 15 (
-        timeout /t 2 >nul
-        goto skms
-    ) else (
-        goto busyError
+set "ACTIVATED=0"
+for %%S in (kms8.msguides.com kms9.msguides.com kms.loli.best kms.digiboy.ir kms.moeclub.org kms.ddns.net e8.us.to) do (
+    echo      Trying KMS server: %%S ...
+    cscript //nologo ospp.vbs /sethst:%%S >nul
+    cscript //nologo ospp.vbs /act | findstr /i "successful" >nul 2>&1
+    if not errorlevel 1 (
+        set "ACTIVATED=1"
+        goto :ACTIVATION_SUCCESS
     )
+    echo      Server %%S failed or busy. Trying next...
 )
 
-:busyError
-color 0E
+if %ACTIVATED%==0 goto :ACTIVATION_FAILED
+
+:ACTIVATION_SUCCESS
+color 0A
 echo.
-echo  ╔═══════════════════════════════════════════════╗
-echo  ║              ACTIVATION FAILED                ║
-echo  ╚═══════════════════════════════════════════════╝
+echo  ===================================================
+echo            OFFICE ACTIVATED SUCCESSFULLY!
+echo  ===================================================
 echo.
-echo  All KMS servers are currently busy or unavailable.
-echo  Please try again later or check your internet connection.
+echo  Your Microsoft Office is now fully activated.
 echo.
 echo  Press any key to exit...
 pause >nul
-exit
+exit /b 0
+
+:ACTIVATION_FAILED
+color 0E
+echo.
+echo  ===================================================
+echo                  ACTIVATION FAILED
+echo  ===================================================
+echo.
+echo  All KMS servers are currently busy or unavailable.
+echo  Please check your internet connection and firewall on port 1688.
+echo.
+echo  Press any key to exit...
+pause >nul
+exit /b 1

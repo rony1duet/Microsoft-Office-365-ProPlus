@@ -1,4 +1,3 @@
-:: http://zone94.com
 @ECHO OFF
 TITLE Microsoft Office 365 ProPlus - Online Installer
 PushD "%~dp0"
@@ -29,12 +28,6 @@ Set "optS=%on%"
 
 :MENU
 CLS
-ECHO                                    \\!//
-ECHO                                    (o o)
-ECHO -------------------------------oOOo-(_)-oOOo-------------------------------
-ECHO      Microsoft Office 365 Professional Plus - Online Installer v%Version%
-ECHO      INFO: After the Installation run the 'KMS Activation Script' from
-ECHO ===========================================================================
 FLTMC >NUL 2>&1 || Set _=^"Set "_ELEV=1" ^& CD /d """%~dp0""" ^& "%~f0" %*^" && ((If "%_ELEV%"=="" (ECHO. & ECHO Requesting administrator privileges . . . & ((PowerShell -nop -c START "" CMD -args '/d/x/s/v:off/r',$env:_ -Verb RunAs >NUL 2>NUL) || (mshta vbscript:execute^("CreateObject(""Shell.Application"").ShellExecute(""CMD"",""/d/x/s/v:off/r"" & CreateObject(""WScript.Shell"").Environment(""PROCESS"")(""_""),,""RunAs"",1)(Window.Close)"^) >NUL 2>&1))) Else (ECHO. & ECHO This script requires administrator privileges. & PAUSE)) & EXIT /b)
 
 WHERE /q /r ".\Office\Data" "stream.*.x-none.dat" 2>NUL && (Set "OFiles=%on%") || (Set "OFiles=%off%")
