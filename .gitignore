@@ -1,0 +1,8 @@
+# Office Deployment Tool temporary and cache files
+Office 365 Setup Config.xml
+Office/
+
+# Logs and OS files
+*.log
+Thumbs.db
+desktop.ini
